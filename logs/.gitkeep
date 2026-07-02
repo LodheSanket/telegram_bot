@@ -1,0 +1,3 @@
+application.log gets created automatically here the first time you run the
+Django server (settings.py creates this folder if it doesn't exist and
+writes logs to application.log inside it).

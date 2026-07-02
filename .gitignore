@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+logs/*.log
+venv/
+.venv/
+*.egg-info/
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Migrations (Optional)
+# */migrations/*.py
+# !*/migrations/__init__.py
