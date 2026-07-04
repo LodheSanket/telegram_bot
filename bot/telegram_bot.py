@@ -1,23 +1,3 @@
-"""
-Standalone Telegram bot. This does not run inside Django, it's a
-separate process that listens for messages on Telegram and calls the
-Django API over HTTP.
-
-New workflow:
-    1. User sends a plain email address as a message.
-    2. Bot validates it and shows role buttons (Frontend, Backend,
-       Angular, Full Stack).
-    3. User taps a button.
-    4. Bot calls the Django API with that email and role.
-
-Run it with:
-    python bot/telegram_bot.py
-
-It needs its own environment variables (see .env.example):
-    TELEGRAM_BOT_TOKEN  - from BotFather
-    DJANGO_API_URL      - where the Django API is running
-    SECRET_API_KEY      - must match SECRET_API_KEY in the Django app
-"""
 
 import logging
 import os
@@ -38,7 +18,7 @@ from telegram.ext import (
 load_dotenv()
 
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-DJANGO_API_URL = os.environ.get("DJANGO_API_URL", "http://127.0.0.1:8000/api/apply/")
+DJANGO_API_URL = os.environ.get("DJANGO_API_URL")
 SECRET_API_KEY = os.environ.get("SECRET_API_KEY")
 
 
@@ -89,6 +69,10 @@ async def submit_application(email: str, role: str) -> tuple[bool, str]:
     """
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
+            logger.info(f"Bot SECRET_API_KEY: {repr(SECRET_API_KEY)}")
+            logger.info(f"Bot DJANGO_API_URL: {repr(DJANGO_API_URL)}")
+            print(f"Bot SECRET_API_KEY: {repr(SECRET_API_KEY)}")
+            print(f"Bot DJANGO_API_URL: {repr(DJANGO_API_URL)}")
             response = await client.post(
                 DJANGO_API_URL,
                 json={"email": email, "role": role},
@@ -105,6 +89,9 @@ async def submit_application(email: str, role: str) -> tuple[bool, str]:
             f"Role: {ROLE_DISPLAY_NAMES[role]}"
         )
 
+    print("Status:", response.status_code)
+    print("Response:", response.text)
+    print("Headers:", response.headers)
     if response.status_code == 401:
         return False, (
             "The bot couldn't authenticate with the API. Check that SECRET_API_KEY "

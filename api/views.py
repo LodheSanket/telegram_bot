@@ -1,10 +1,12 @@
 import logging
 
 from rest_framework import status
+from rest_framework import response
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+from rest_framework.response import Response 
 from rest_framework.views import APIView
 
+from bot.telegram_bot import DJANGO_API_URL
 from services.email_service import send_application_email
 from services.resume_mapper import get_resume_path
 from services.templates import SUBJECT_TEMPLATES, TEMPLATES
@@ -23,12 +25,13 @@ class ApplyView(APIView):
     and email template, sends the email, records the attempt in
     ApplicationHistory, and reports back whether it worked.
     """
-
-    # authentication_classes = [APIKeyAuthentication]
+    
+    authentication_classes = [APIKeyAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request):
         logger.info(f"Apply request received: {request.data}")
+        
 
         serializer = ApplyRequestSerializer(data=request.data)
         if not serializer.is_valid():
