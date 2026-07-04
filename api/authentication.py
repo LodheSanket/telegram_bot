@@ -12,6 +12,10 @@ from rest_framework import authentication, exceptions
 class APIKeyAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         api_key = request.headers.get("X-API-KEY")
+        
+        print("Received :", repr(api_key))
+        print("Expected :", repr(settings.SECRET_API_KEY))
+        print("Equal    :", api_key == settings.SECRET_API_KEY)
 
         if not api_key:
             raise exceptions.AuthenticationFailed("Missing API key. Include an X-API-KEY header.")

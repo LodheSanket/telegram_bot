@@ -68,30 +68,27 @@ async def submit_application(email: str, role: str) -> tuple[bool, str]:
     handlers means the HTTP logic can be tested or reused on its own.
     """
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             logger.info(f"Bot SECRET_API_KEY: {repr(SECRET_API_KEY)}")
             logger.info(f"Bot DJANGO_API_URL: {repr(DJANGO_API_URL)}")
-            print(f"Bot SECRET_API_KEY: {repr(SECRET_API_KEY)}")
-            print(f"Bot DJANGO_API_URL: {repr(DJANGO_API_URL)}")
             response = await client.post(
                 DJANGO_API_URL,
                 json={"email": email, "role": role},
                 headers={"X-API-KEY": SECRET_API_KEY},
             )
     except httpx.RequestError as exc:
+        print(type(exc))
+        print(repr(exc))
         logger.error(f"Could not reach Django API: {exc}")
         return False, "Couldn't reach the application server. Please try again in a bit."
 
     if response.status_code == 200:
         return True, (
-            "Application sent successfully\n"
+            "Application request received successfully. The email is being sent in the background\n"
             f"Email: {email}\n"
             f"Role: {ROLE_DISPLAY_NAMES[role]}"
         )
 
-    print("Status:", response.status_code)
-    print("Response:", response.text)
-    print("Headers:", response.headers)
     if response.status_code == 401:
         return False, (
             "The bot couldn't authenticate with the API. Check that SECRET_API_KEY "

@@ -22,7 +22,6 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -90,10 +89,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
-# Django REST Framework configuration. The API key authentication class
-# below is what actually checks the X-API-KEY header on every request,
-# permissions are left open since that authentication class already
-# rejects anything that doesn't have a valid key.
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "api.authentication.APIKeyAuthentication",
@@ -162,3 +157,7 @@ LOGGING = {
         },
     },
 }
+
+
+
+print("SECRET_API_KEY =", repr(SECRET_API_KEY))

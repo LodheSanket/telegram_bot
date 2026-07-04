@@ -14,8 +14,32 @@ from services.templates import SUBJECT_TEMPLATES, TEMPLATES
 from .authentication import APIKeyAuthentication
 from .models import ApplicationHistory
 from .serializers import ApplyRequestSerializer
-
+from threading import Thread
 logger = logging.getLogger("api")
+
+
+def send_email_in_background(email, role, subject, body, resume_path):
+    """
+    Runs in a background thread so the API can return immediately.
+    """
+
+    success, message = send_application_email(
+        email,
+        subject,
+        body,
+        resume_path,
+    )
+
+    ApplicationHistory.objects.create(
+        recipient_email=email,
+        role=role,
+        status="sent" if success else "failed",
+    )
+
+    if success:
+        logger.info(f"Email sent to {email} for role {role}")
+    else:
+        logger.error(f"Email failed for {email}: {message}")
 
 
 class ApplyView(APIView):
@@ -55,22 +79,22 @@ class ApplyView(APIView):
         subject = SUBJECT_TEMPLATES[role]
         body = TEMPLATES[role]
 
-        success, message = send_application_email(email, subject, body, resume_path)
+        Thread(
+            target=send_email_in_background,
+            args=(
+                email,
+                role,
+                subject,
+                body,
+                resume_path,
+            ),
+            daemon=True,
+        ).start()
 
-        # Every attempt gets logged, whether it succeeded or not, so
-        # there's a full history to look back on later.
-        ApplicationHistory.objects.create(
-            recipient_email=email,
-            role=role,
-            status="sent" if success else "failed",
-        )
-
-        if success:
-            logger.info(f"Email sent to {email} for role {role}")
-            return Response({"success": True, "message": "Application sent"}, status=status.HTTP_200_OK)
-
-        logger.error(f"Email failed for {email}, role {role}: {message}")
         return Response(
-            {"success": False, "message": message},
-            status=status.HTTP_502_BAD_GATEWAY,
+            {
+                "success": True,
+                "message": "Application queued successfully."
+            },
+            status=status.HTTP_200_OK,
         )
