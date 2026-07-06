@@ -77,8 +77,6 @@ async def submit_application(email: str, role: str) -> tuple[bool, str]:
                 headers={"X-API-KEY": SECRET_API_KEY},
             )
     except httpx.RequestError as exc:
-        print(type(exc))
-        print(repr(exc))
         logger.error(f"Could not reach Django API: {exc}")
         return False, "Couldn't reach the application server. Please try again in a bit."
 
@@ -138,8 +136,6 @@ async def handle_role_selection(update: Update, context: ContextTypes.DEFAULT_TY
     chat_id = update.effective_chat.id
     role = query.data
 
-    # Acknowledge the tap right away so Telegram doesn't show a
-    # loading spinner on the button while we wait for the API call.
     await query.answer()
 
     email = pending_emails.get(chat_id)
